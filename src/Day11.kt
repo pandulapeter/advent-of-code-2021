@@ -13,6 +13,16 @@ fun main() {
         }
         energyLevels.draw(step)
         println("There have been $C_YELLOW$flashCount$C_RESET flashes in total.")
+        println("\n${C_GREEN}Day 11 - Part Two$C_RESET\n")
+        val energyLevelsCopy = inputLines.map { row -> row.map { it.digitToInt() }.toMutableList() }
+        var stepsToSynchronize = 0
+        do {
+            energyLevelsCopy.draw(stepsToSynchronize)
+            stepsToSynchronize++
+            energyLevelsCopy.process()
+        } while (energyLevelsCopy.any { row -> row.any { energyLevel -> energyLevel != 0 } })
+        energyLevelsCopy.draw(stepsToSynchronize)
+        println("It takes $C_YELLOW$stepsToSynchronize$C_RESET steps for the energy levels to synchronize.")
     } catch (_: Exception) {
         println("Invalid input.")
     }
