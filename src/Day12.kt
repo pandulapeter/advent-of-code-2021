@@ -18,23 +18,50 @@ fun main() {
         }
         println("\n${C_RED}Paths:$C_RESET")
         val paths = mutableListOf<MutableList<Node>>(mutableListOf(Node.Start))
-        connections.findPaths(paths)
+        connections.findPaths(paths, false)
         paths.filterNot { it.last() == Node.DeadEnd }.forEach { println(it) }
         println("\nThere are ${C_YELLOW}${paths.filter { it.last() == Node.End }.size}$C_RESET possible paths in total.")
+        println("\n${C_GREEN}Day 12 - Part Two$C_RESET\n")
+        paths.clear()
+        paths.add(mutableListOf(Node.Start))
+        println("${C_RED}Paths:$C_RESET")
+        connections.findPaths(paths, true)
+        val answer = paths
+            .asSequence()
+            .distinct()
+            .filterNot { path -> path.last() == Node.DeadEnd }
+            .filter { path ->
+                path.filterIsInstance<Node.Cave.Small>().groupingBy { it }.eachCount().let { smallCaveCounter ->
+                    smallCaveCounter.keys.count { (smallCaveCounter[it] ?: 0) > 1 } <= 1
+                            && smallCaveCounter.keys.none { (smallCaveCounter[it] ?: 0) > 2 }
+                }
+            }
+            .toList()
+        answer.forEach { println(it) }
+        println("\nThere are ${C_YELLOW}${answer.size}$C_RESET possible paths in total.")
     } catch (_: Exception) {
         println("Invalid input.")
     }
 }
 
 private fun Map<Node, List<Node>>.findPaths(
-    paths: MutableList<MutableList<Node>>
+    paths: MutableList<MutableList<Node>>,
+    canVisitASmallCaveTwice: Boolean
 ) {
     fun currentPath() = paths.last()
     fun lastNode() = currentPath().last()
     while (lastNode() != Node.End && lastNode() != Node.DeadEnd) {
-        val potentialNextNodes = this[lastNode()].orEmpty().filter { node ->
-            !currentPath().contains(node) || node is Node.Cave.Large
-        }
+        val potentialNextNodes = this[lastNode()].orEmpty()
+            .asSequence()
+            .filter { node -> node != Node.Start }
+            .filter { node ->
+                currentPath().let { path ->
+                !path.contains(node)
+                        || node is Node.Cave.Large
+                        || (canVisitASmallCaveTwice && path.count { it == node } < 2 && path.size - path.distinct().size <= 4)
+                }
+            }
+            .toList()
         if (potentialNextNodes.isEmpty()) {
             currentPath().add(Node.DeadEnd)
         } else {
@@ -42,7 +69,7 @@ private fun Map<Node, List<Node>>.findPaths(
             paths.removeAt(paths.lastIndex)
             potentialNextNodes.forEach { node ->
                 paths.add((copy + node).toMutableList())
-                findPaths(paths)
+                findPaths(paths, canVisitASmallCaveTwice)
             }
         }
     }
