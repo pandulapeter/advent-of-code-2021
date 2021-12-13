@@ -20,14 +20,20 @@ fun main() {
                     Instruction.VerticalFold(value)
                 }
             }
-        }.take(1)
+        }
         println("There are ${dots.size} dots and ${instructions.size} instructions.\n")
         dots.draw(instructions)
-        println("After folding:\n")
-        dots.forEach { it.fold(instructions) }
-        val foldedDots = dots.distinct()
+        println("After folding once:\n")
+        dots.forEach { it.fold(instructions.take(1)) }
+        var foldedDots = dots.distinct()
         foldedDots.draw(instructions)
-        println("There are $C_YELLOW${foldedDots.size}$C_RESET dots after folding.")
+        println("There are $C_YELLOW${foldedDots.size}$C_RESET dots after folding once.")
+        println("\n${C_GREEN}Day 13 - Part Two$C_RESET\n")
+        println("After performing all remaining folds:\n")
+        dots.forEach { it.fold(instructions) }
+        foldedDots = dots.distinct()
+        foldedDots.draw(instructions)
+        println("There are $C_YELLOW${foldedDots.size}$C_RESET dots after performing all instructions.")
     } catch (_: Exception) {
         println("Invalid input.")
     }
@@ -77,4 +83,5 @@ private fun List<Dot>.draw(instructions: List<Instruction>) {
         }
         println()
     }
+    println()
 }
