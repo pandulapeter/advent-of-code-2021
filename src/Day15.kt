@@ -4,13 +4,18 @@ fun main() {
     val inputLines = readInput("Day15")
     println("Read ${inputLines.size} lines")
     try {
-        println("\n${C_GREEN}Day 15 - Part One$C_RESET\n")
         val riskLevels = inputLines.map { line -> line.map { it.digitToInt() } }
-        println("The lowest risk path has a total risk of ${C_YELLOW}${riskLevels.lowestTotalRiskPath()}${C_RESET}.")
+        println("\n${C_GREEN}Day 15 - Part One$C_RESET\n")
+        riskLevels.process()
+        println("\n${C_GREEN}Day 15 - Part Two$C_RESET\n")
+        riskLevels.expand(5).process()
     } catch (_: Exception) {
         println("Invalid input.")
     }
 }
+
+private fun List<List<Int>>.process() =
+    println("The lowest risk path has a total risk of ${C_YELLOW}${lowestTotalRiskPath()}${C_RESET}.")
 
 private fun List<List<Int>>.lowestTotalRiskPath(): Int {
     val distances = mapIndexed { y, line ->
@@ -51,3 +56,11 @@ private fun List<List<Int>>.neighbours(x: Int, y: Int) = buildList {
         add(x to y + 1)
     }
 }
+
+private fun List<List<Int>>.expand(multiplier: Int): List<List<Int>> {
+    val expandedRight =
+        map { row -> (1 until multiplier).fold(row) { acc, step -> acc + row.increment(step) } }
+    return (1 until multiplier).fold(expandedRight) { acc, step -> acc + expandedRight.map { it.increment(step) } }
+}
+
+private fun List<Int>.increment(by: Int) = map { level -> (level + by).let { if (it > 9) it - 9 else it } }
