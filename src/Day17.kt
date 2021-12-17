@@ -11,7 +11,11 @@ fun main() {
             )
         }
         println("\n${C_GREEN}Day 17 - Part One$C_RESET\n")
-        val bestShot = target.findBestPath(xVelocityRange = -200..200, yVelocityRange = -200..200)
+        val validShots = target.findValidPaths(
+            xVelocityRange = -INTERVAL_SIZE..INTERVAL_SIZE,
+            yVelocityRange = -INTERVAL_SIZE..INTERVAL_SIZE
+        )
+        val bestShot = validShots.maxByOrNull { shot -> shot.path.maxOf { it.y } }
         if (bestShot == null) {
             println("\n${C_YELLOW}There is no shot that reaches the target.$C_RESET")
         } else {
@@ -20,10 +24,14 @@ fun main() {
             print("\nThe best shot has the starting velocity $C_CYAN(${bestShot.xVelocity},${bestShot.yVelocity})$C_RESET ")
             println("and reaches the maximum height of $C_YELLOW${bestShot.path.maxOf { it.y }}$C_RESET.")
         }
+        println("\n${C_GREEN}Day 17 - Part Two$C_RESET\n")
+        println("There are $C_YELLOW${validShots.size}$C_RESET valid shots in total.")
     } catch (_: Exception) {
         println("Invalid input.")
     }
 }
+
+const val INTERVAL_SIZE = 200
 
 private fun String.range() = drop(2).split("..").let { range ->
     range.first().toInt()..range.last().toInt()
@@ -48,18 +56,16 @@ private data class Shot(
     val path: List<PathSegment>
 )
 
-private fun Target.findBestPath(
+private fun Target.findValidPaths(
     xVelocityRange: IntRange,
     yVelocityRange: IntRange
-): Shot? {
-    val validShots = mutableListOf<Shot>()
+) = mutableListOf<Shot>().apply {
     xVelocityRange.forEach { xVelocity ->
         yVelocityRange.forEach { yVelocity ->
-            simulatePath(xVelocity, yVelocity)?.let(validShots::add)
+            simulatePath(xVelocity, yVelocity)?.let(::add)
         }
     }
-    return validShots.maxByOrNull { shot -> shot.path.maxOf { it.y } }
-}
+}.toList()
 
 private fun Target.simulatePath(xVelocity: Int, yVelocity: Int): Shot? {
     print("Testing shot $C_CYAN ($xVelocity,$yVelocity)$C_RESET: ")
